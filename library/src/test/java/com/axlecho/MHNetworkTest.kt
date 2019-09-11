@@ -1,7 +1,9 @@
 package com.axlecho
 
 import android.util.Log
+import com.axlecho.api.manhuadui.ManhuaduiApi
 import io.reactivex.schedulers.Schedulers
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,13 +26,20 @@ class MHNetworkTest {
 
         for (i in 1..100) {
 
-            if(i == 20 && !ret.isDisposed) {
+            if(i == 10 && !ret.isDisposed) {
                 ret.dispose()
             }
 
             Log.d("NetworkTest", "network is disposed - " + ret.isDisposed)
             Thread.sleep(200)
         }
+    }
 
+    @Test
+    fun testData() {
+        val result = ManhuaduiApi.INSTANCE.data("huiyedaxiaojiexiangrangwogaobai", "178538").blockingFirst()
+        Log.d("test",result.toString())
+        Assert.assertEquals(23, result.data.size)
+        Assert.assertEquals("https://mhcdn.manhuazj.com/ManHuaKu/h/huiyedaxiaojiexiangrangwogaobaitiancaimendelianait/1/201944768.jpg", result.data[0])
     }
 }

@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.3.0'
 
+    testImplementation 'com.github.axlecho:manhuaapi:v1.0.6'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:4.1'
     testImplementation 'org.bouncycastle:bcprov-jdk15on:1.57'
