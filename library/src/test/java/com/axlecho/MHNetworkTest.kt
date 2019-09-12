@@ -26,7 +26,7 @@ class MHNetworkTest {
 
         for (i in 1..100) {
 
-            if(i == 10 && !ret.isDisposed) {
+            if (i == 10 && !ret.isDisposed) {
                 ret.dispose()
             }
 
@@ -38,8 +38,22 @@ class MHNetworkTest {
     @Test
     fun testData() {
         val result = ManhuaduiApi.INSTANCE.data("huiyedaxiaojiexiangrangwogaobai", "178538").blockingFirst()
-        Log.d("test",result.toString())
+        Log.d("test", result.toString())
         Assert.assertEquals(23, result.data.size)
         Assert.assertEquals("https://mhcdn.manhuazj.com/ManHuaKu/h/huiyedaxiaojiexiangrangwogaobaitiancaimendelianait/1/201944768.jpg", result.data[0])
+    }
+
+    @Test
+    fun testQueue() {
+        val result = ManhuaduiApi.INSTANCE.data("huiyedaxiaojiexiangrangwogaobai", "178538").blockingFirst()
+        val queue = MHSpider.queue(result.data)
+        queue.size()
+        queue.dump()
+
+        queue.start()
+        queue.dump()
+
+        queue.seekTo(queue.size() / 2)
+        queue.dump()
     }
 }
