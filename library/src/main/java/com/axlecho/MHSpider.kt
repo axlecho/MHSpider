@@ -10,7 +10,7 @@ import java.io.OutputStream
 const val TAG = "MHSpider"
 
 class MHSpiderInfo(private val url: String) {
-    private val status = "INIT"
+    var status = "INIT"
     private var process = -1.0f
     private var size = -1
     private var file = File.createTempFile(".jpg", "tmp ")
@@ -29,12 +29,9 @@ class MHSpiderInfo(private val url: String) {
         return bytesCopied
     }
 
-    fun excute() {
+    fun execute(onDone: () -> Any) {
         handler = MHNetwork.INSTANCE.get(url).subscribeOn(Schedulers.io())
-            .doOnComplete {
-
-            }
-            .subscribe({ response ->
+            .doOnNext { response ->
                 size = response.byteStream().available()
                 file.outputStream().use {
                     response.byteStream().copyTo(it) { totalBytesCopied, _ ->
@@ -42,9 +39,10 @@ class MHSpiderInfo(private val url: String) {
                         return@copyTo process
                     }
                 }
-            }, {
-
-            })
+            }
+            .doOnComplete { status = "DONE" }
+            .doOnError { status = "FAILED" }
+            .subscribe { onDone() }
     }
 
     fun dump(): String {
@@ -54,6 +52,12 @@ class MHSpiderInfo(private val url: String) {
 
 class MHSpiderQueue(data: List<String>) {
     private val queue = mutableListOf<MHSpiderInfo>()
+    private val worker = mutableSetOf<MHSpiderInfo>()
+    private var index = 0
+
+    companion object {
+        private const val DEFAULT_WORKER_NUM = 5
+    }
 
     init {
         for (url in data) {
@@ -74,7 +78,19 @@ class MHSpiderQueue(data: List<String>) {
     }
 
     fun start() {
-        queue[0].excute()
+        while (worker.size < DEFAULT_WORKER_NUM) {
+            val next = next() ?: return
+            next.execute { start() }
+            worker.add(next)
+        }
+    }
+
+    fun next(): MHSpiderInfo? {
+        for (info in queue) {
+            if (info.status == "DONE") continue
+            return info
+        }
+        return null
     }
 
     fun seekTo(index: Int) {}
