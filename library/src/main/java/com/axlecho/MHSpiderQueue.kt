@@ -8,7 +8,7 @@ class MHSpiderQueue(data: List<String>) {
     private var index = 0
 
     companion object {
-        private const val DEFAULT_WORKER_NUM = 1
+        private const val DEFAULT_WORKER_NUM = 5
     }
 
     init {
@@ -36,15 +36,16 @@ class MHSpiderQueue(data: List<String>) {
                 worker.remove(it)
                 start()
             }
-            next.execute()
             worker.add(next)
+            next.execute()
         }
     }
 
     fun next(): MHSpiderTask? {
         for (info in queue) {
-            if (info.status == MHSpiderTaskStatus.DONE) continue
-            return info
+            if (info.status == MHSpiderTaskStatus.INIT) {
+                return info
+            }
         }
         return null
     }

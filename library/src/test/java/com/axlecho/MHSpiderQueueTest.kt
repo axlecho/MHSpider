@@ -22,7 +22,7 @@ class MHSpiderQueueTest {
         queue.dump()
 
         queue.start()
-        for (i in 1..20) {
+        for (i in 1..200) {
             queue.dump()
             Thread.sleep(2 * 1000)
         }
