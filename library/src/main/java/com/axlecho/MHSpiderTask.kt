@@ -7,9 +7,12 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
+enum class MHSpiderTaskStatus {
+    INIT, CANCEL, FAILED, RUNNING, DONE
+}
 
 class MHSpiderTask(private val url: String) {
-    var status = "INIT"
+    var status = MHSpiderTaskStatus.INIT
     private var process = -1.0f
     private var size = -1
     private var file = File.createTempFile("tmp", ".jpg")
@@ -20,6 +23,8 @@ class MHSpiderTask(private val url: String) {
     private var onDone: ((MHSpiderTask) -> Any)? = null
     private var onProgress: ((Float) -> Any)? = null
 
+    var workScheduler = Schedulers.io()
+    var observerScheduler = Schedulers.newThread()
 
     private fun InputStream.copyTo(out: OutputStream, onCopy: (totalBytesCopied: Long, bytesJustCopied: Int) -> Any): Long {
         var bytesCopied: Long = 0
@@ -55,7 +60,9 @@ class MHSpiderTask(private val url: String) {
     }
 
     fun execute() {
-        handler = MHNetwork.INSTANCE.get(url).subscribeOn(Schedulers.io())
+        status = MHSpiderTaskStatus.RUNNING
+        handler = MHNetwork.INSTANCE.get(url).subscribeOn(workScheduler)
+            .observeOn(observerScheduler)
             .doOnNext { response ->
                 size = response.byteStream().available()
                 file.outputStream().use {
@@ -66,9 +73,14 @@ class MHSpiderTask(private val url: String) {
                     }
                 }
             }
-            .doOnComplete { status = "DONE" }
-            .doOnError { status = "FAILED" }
+            .doOnComplete { status = MHSpiderTaskStatus.DONE }
+            .doOnError { status = MHSpiderTaskStatus.FAILED }
             .subscribe({ onNext?.invoke(it) }, { onError?.invoke(it) }, { onDone?.invoke(this) })
+    }
+
+    fun cancel() {
+        handler.dispose()
+        status = MHSpiderTaskStatus.CANCEL
     }
 
     fun dump(): String {

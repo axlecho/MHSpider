@@ -43,7 +43,7 @@ class MHSpiderQueue(data: List<String>) {
 
     fun next(): MHSpiderTask? {
         for (info in queue) {
-            if (info.status == "DONE") continue
+            if (info.status == MHSpiderTaskStatus.DONE) continue
             return info
         }
         return null
