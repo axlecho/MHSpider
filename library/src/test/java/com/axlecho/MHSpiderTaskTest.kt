@@ -35,8 +35,6 @@ class MHSpiderTaskTest {
 
     @Test
     fun testTaskCancel() {
-
-
         task.done { Log.v(TEST_TAG, "task done") }
             .progress { Log.v(TEST_TAG, "task progress $it") }
             .next { }
@@ -47,5 +45,10 @@ class MHSpiderTaskTest {
         task.cancel()
         Assert.assertTrue(MHSpiderTaskStatus.CANCEL == task.status)
         Thread.sleep(40000)
+    }
+
+    @Test
+    fun testTask() {
+
     }
 }
