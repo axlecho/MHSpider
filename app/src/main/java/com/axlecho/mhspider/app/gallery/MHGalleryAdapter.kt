@@ -2,11 +2,8 @@ package com.axlecho.mhspider.app.gallery
 
 import com.hippo.glgallery.GalleryPageView
 import com.hippo.glgallery.GalleryView
-import com.hippo.glview.image.ImageTexture
 
 class MHGalleryAdapter(private val provider: MHGalleryProvider) : GalleryView.Adapter() {
-    private val mUploader: ImageTexture.Uploader
-
 
     override fun size(): Int {
         return provider.size()
